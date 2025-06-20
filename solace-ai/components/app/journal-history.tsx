@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { CalendarIcon, Play } from "lucide-react"
@@ -8,51 +8,40 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { format } from "date-fns"
+import { getAllJournals } from "@/lib/utils"
+import { journalEntry } from "@/lib/types"
 
 // BACKEND INTEGRATION: Fetch actual journal entries from the database
-const journalEntries = [
-  {
-    id: 1,
-    date: new Date(2023, 4, 15),
-    summary: "Reflected on work-life balance and stress management techniques.",
-    insights: [
-      "Work meetings in the afternoon increase stress levels",
-      "Taking short walks helps reset focus",
-      "Screen time before bed affects sleep quality",
-    ],
-    audioUrl: "#",
-  },
-  {
-    id: 2,
-    date: new Date(2023, 4, 14),
-    summary: "Discussed challenges with project deadlines and team communication.",
-    insights: [
-      "Clear communication reduces anxiety",
-      "Breaking tasks into smaller steps helps productivity",
-      "Taking breaks improves creative thinking",
-    ],
-    audioUrl: "#",
-  },
-  {
-    id: 3,
-    date: new Date(2023, 4, 13),
-    summary: "Shared positive experiences from family dinner and evening relaxation.",
-    insights: [
-      "Quality time with loved ones improves mood",
-      "Cooking is a meditative activity that reduces stress",
-      "Evening routines help signal the body to prepare for sleep",
-    ],
-    audioUrl: "#",
-  },
-]
+
+async function generateJournalEntries(user_id: string): Promise<journalEntry[]> {
+  const journalEntries: journalEntry[] = []
+
+  const journals = await getAllJournals(user_id)
+  for (let i = 0; i < journals.length; i++) {
+    journalEntries.push({
+      id: journals[i].id,
+      date: new Date(journals[i].created_at),
+      summary: "Discussed challenges with project deadlines and team communication.",
+      insights: [journals[i].content],
+      audioUrl: "#"
+    })
+  }
+  return journalEntries
+}
 
 export function JournalHistory() {
+  const [journalEntries, setJournalEntries] = useState<journalEntry[]>([])
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [selectedEntry, setSelectedEntry] = useState<number | null>(null)
 
+  useEffect(() => {
+    generateJournalEntries("dkajfhkb").then(setJournalEntries)
+  }, [])
+
   // Filter entries by selected date
   const filteredEntries = date
-    ? journalEntries.filter((entry) => entry.date.toDateString() === date.toDateString())
+    ? journalEntries.filter((entry) => 
+      entry.date.toDateString() === date.toDateString())
     : journalEntries
 
   // BACKEND INTEGRATION: Implement audio playback of journal recordings

@@ -1,17 +1,22 @@
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, date
+from enum import Enum
 
 
-class JournalCreate(BaseModel):
-   content: str
-   user_id: str
-   class Config:
+class Habit(BaseModel):
+    id: Optional[str]
+    user_id: str
+    name: str
+    description: str
+    target: int
+    created_at: date = Field(default_factory=date.today)
+
+    class Config:
        orm_mode = True
 
-
 class Journal(BaseModel):
-   id: int
+   id: Optional[int]
    content: str
    user_id: str
    created_at: datetime = Field(default_factory=datetime.now)
@@ -20,4 +25,8 @@ class Journal(BaseModel):
    class Config:
        orm_mode = True
 
-
+class HabitCompletion(BaseModel):
+    id: Optional[int]
+    habit_id: int
+    completed: bool
+    Date: date = Field(default_factory=date.today)

@@ -46,6 +46,6 @@ def test_database_connection():
        db.close()
 
 
-if __name__ == "__main__":
+def set_up():
    create_tables()
    test_database_connection()

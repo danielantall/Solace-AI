@@ -8,6 +8,7 @@ import { Mic, MicOff, AudioWaveformIcon as Waveform, Save, Trash } from "lucide-
 export function VoiceJournal() {
   const [recordingState, setRecordingState] = useState<"idle" | "recording" | "recorded">("idle")
   const [recordingTime, setRecordingTime] = useState(0)
+  const [timer, setTimer] = useState<NodeJS.Timeout>()
 
   // BACKEND INTEGRATION: Implement actual audio recording using Web Audio API or MediaRecorder
   // BACKEND INTEGRATION: Fetch personalized journal prompt from AI
@@ -20,12 +21,14 @@ export function VoiceJournal() {
     const timer = setInterval(() => {
       setRecordingTime((prev) => prev + 1)
     }, 1000)
+    setTimer(timer)
     // Store timer ID in a ref or state to clear it later
   }
 
   const stopRecording = () => {
     setRecordingState("recorded")
     // BACKEND INTEGRATION: Stop audio recording
+    clearInterval(timer)
     // Clear timer
   }
 
