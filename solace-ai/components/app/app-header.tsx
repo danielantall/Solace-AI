@@ -11,38 +11,29 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useUser, useAuth } from "@clerk/nextjs"
+import { useRouter } from "next/navigation"
 
 export function AppHeader() {
-  // BACKEND INTEGRATION: Fetch user notifications from the database
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      message: "Morning guidance is ready for you",
-      time: "5 minutes ago",
-    },
-    {
-      id: 2,
-      message: "Time for your evening reflection",
-      time: "2 hours ago",
-    },
+  const { user, isLoaded } = useUser()
+  const { signOut } = useAuth()
+  const router = useRouter()
+
+  const [notifications] = useState([
+    { id: 1, message: "Morning guidance is ready for you", time: "5 minutes ago" },
+    { id: 2, message: "Time for your evening reflection", time: "2 hours ago" },
   ])
 
-  // BACKEND INTEGRATION: Mark notification as read
-  const markAsRead = (id: number) => {
-    // Update notification status in database
+  const handleLogout = async () => {
+    await signOut()
+    router.push("/sign-in")
   }
 
-  // BACKEND INTEGRATION: Fetch user profile data
-  const user = {
-    name: "User Name",
-    initials: "U",
-  }
+  // ⛔ prevent rendering if user not loaded
+  if (!isLoaded || !user) return null
 
-  // BACKEND INTEGRATION: Implement logout functionality
-  const handleLogout = () => {
-    // Log out user and redirect to login page
-  }
+  const initials = (user.firstName?.[0] ?? "") + (user.lastName?.[0] ?? "")
 
   return (
     <header className="bg-white border-b border-green-100 py-4 px-6 md:px-8 flex items-center justify-end">
@@ -59,18 +50,14 @@ export function AppHeader() {
           <DropdownMenuContent align="end" className="w-80">
             <DropdownMenuLabel>Notifications</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {notifications.length > 0 ? (
-              notifications.map((notification) => (
-                <DropdownMenuItem key={notification.id} className="py-3 cursor-pointer">
-                  <div>
-                    <p className="text-sm font-medium">{notification.message}</p>
-                    <p className="text-xs text-muted-foreground">{notification.time}</p>
-                  </div>
-                </DropdownMenuItem>
-              ))
-            ) : (
-              <div className="py-3 px-2 text-center text-sm text-muted-foreground">No new notifications</div>
-            )}
+            {notifications.map((n) => (
+              <DropdownMenuItem key={n.id} className="py-3 cursor-pointer">
+                <div>
+                  <p className="text-sm font-medium">{n.message}</p>
+                  <p className="text-xs text-muted-foreground">{n.time}</p>
+                </div>
+              </DropdownMenuItem>
+            ))}
             <DropdownMenuSeparator />
             <DropdownMenuItem className="justify-center">
               <Button variant="ghost" size="sm" className="w-full">
@@ -84,9 +71,15 @@ export function AppHeader() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative flex items-center space-x-2" size="sm">
               <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-green-100 text-green-800">{user.initials}</AvatarFallback>
+                {user.imageUrl ? (
+                  <AvatarImage src={user.imageUrl} alt="Profile" />
+                ) : (
+                  <AvatarFallback className="bg-green-100 text-green-800">{initials}</AvatarFallback>
+                )}
               </Avatar>
-              <span className="text-green-800">{user.name}</span>
+              <span className="text-green-800">
+                {user.firstName} {user.lastName}
+              </span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

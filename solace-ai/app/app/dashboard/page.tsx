@@ -1,21 +1,24 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { MorningGuidance } from "@/components/app/morning-guidance"
-import { JournalPrompt } from "@/components/app/journal-prompt"
-import { ProgressSummary } from "@/components/app/progress-summary"
-import { CheckInReminder } from "@/components/app/check-in-reminder"
-import Link from "next/link"
+"use client";
 
-export default function DashboardPage() {
-  // BACKEND INTEGRATION: Fetch user data, journal entries, and AI insights from the server
-  // BACKEND INTEGRATION: Implement server-side rendering or client-side data fetching
+import { useUser } from "@clerk/nextjs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { MorningGuidance } from "@/components/app/morning-guidance";
+import { JournalPrompt } from "@/components/app/journal-prompt";
+import { ProgressSummary } from "@/components/app/progress-summary";
+import { CheckInReminder } from "@/components/app/check-in-reminder";
+import Link from "next/link";
+
+export default function DashboardClient() {
+  const { isLoaded, user } = useUser();
+
+  if (!isLoaded) return <div>Loading...</div>;
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-light text-green-800 mb-2">
-          {/* BACKEND INTEGRATION: Display user's name from authentication */}
-          Good morning, <span className="font-medium">User</span>
+          Good morning, <span className="font-medium">{user?.firstName ?? "User"}</span>
         </h1>
         <p className="text-green-700">Here's your personalized guidance for today.</p>
       </div>
@@ -31,7 +34,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {/* BACKEND INTEGRATION: Display actual insights generated from user's journal entries */}
+                {/* Replace with real data later */}
                 <div className="p-4 bg-green-50 rounded-lg">
                   <p className="text-green-800 font-medium mb-1">Sleep Pattern</p>
                   <p className="text-green-700 text-sm">
@@ -69,5 +72,5 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

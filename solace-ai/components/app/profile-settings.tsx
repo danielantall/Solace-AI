@@ -1,32 +1,52 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useUser } from "@clerk/clerk-react"
+import { useEffect, useState } from "react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar"
 import { Camera } from "lucide-react"
 
 export function ProfileSettings() {
-  // BACKEND INTEGRATION: Fetch user profile data from the database
-  const [user, setUser] = useState({
+  const { user } = useUser()
+
+  const [userInfo, setUserInfo] = useState({
     name: "User Name",
     email: "user@example.com",
     avatar: "/placeholder.svg?height=100&width=100",
   })
 
+  useEffect(() => {
+    if (user) {
+      setUserInfo({
+        name: user.fullName || "User Name",
+        email: user.primaryEmailAddress?.emailAddress || "user@example.com",
+        avatar: user.imageUrl || "/placeholder.svg?height=100&width=100",
+      })
+    }
+  }, [user])
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // BACKEND INTEGRATION: Update user profile in the database
-    console.log("Profile updated:", user)
+    // BACKEND INTEGRATION: Update user profile in your backend
+    console.log("Profile updated:", userInfo)
   }
 
-  // BACKEND INTEGRATION: Implement avatar upload functionality
   const handleAvatarUpload = () => {
-    // Open file picker and upload avatar
+    // Optional: Trigger file input or handle Clerk image upload
+    console.log("Avatar upload not implemented")
   }
 
   return (
@@ -40,9 +60,12 @@ export function ProfileSettings() {
           <div className="flex flex-col items-center space-y-4">
             <div className="relative">
               <Avatar className="h-24 w-24">
-                <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
+                <AvatarImage
+                  src={userInfo.avatar}
+                  alt={userInfo.name}
+                />
                 <AvatarFallback className="bg-green-100 text-green-800 text-xl">
-                  {user.name
+                  {userInfo.name
                     .split(" ")
                     .map((n) => n[0])
                     .join("")}
@@ -51,6 +74,7 @@ export function ProfileSettings() {
               <Button
                 variant="outline"
                 size="icon"
+                type="button"
                 className="absolute bottom-0 right-0 bg-white border-green-200 text-green-700 hover:bg-green-50"
                 onClick={handleAvatarUpload}
               >
@@ -67,8 +91,10 @@ export function ProfileSettings() {
               </Label>
               <Input
                 id="name"
-                value={user.name}
-                onChange={(e) => setUser({ ...user, name: e.target.value })}
+                value={userInfo.name}
+                onChange={(e) =>
+                  setUserInfo({ ...userInfo, name: e.target.value })
+                }
                 className="border-green-200"
               />
             </div>
@@ -80,8 +106,10 @@ export function ProfileSettings() {
               <Input
                 id="email"
                 type="email"
-                value={user.email}
-                onChange={(e) => setUser({ ...user, email: e.target.value })}
+                value={userInfo.email}
+                onChange={(e) =>
+                  setUserInfo({ ...userInfo, email: e.target.value })
+                }
                 className="border-green-200"
               />
             </div>
@@ -90,8 +118,15 @@ export function ProfileSettings() {
               <Label htmlFor="password" className="text-green-700">
                 Password
               </Label>
-              <Input id="password" type="password" placeholder="••••••••" className="border-green-200" />
-              <p className="text-xs text-green-600">Leave blank to keep your current password</p>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                className="border-green-200"
+              />
+              <p className="text-xs text-green-600">
+                Leave blank to keep your current password
+              </p>
             </div>
           </div>
 
