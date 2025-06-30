@@ -1,7 +1,7 @@
 "use client"
 
-import { useUser } from "@clerk/clerk-react"
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
+import type React from "react"
 import {
   Card,
   CardContent,
@@ -19,33 +19,37 @@ import {
 } from "@/components/ui/avatar"
 import { Camera } from "lucide-react"
 
-export function ProfileSettings() {
-  const { user } = useUser()
+type ProfileSettingsProps = {
+  name: string
+  email: string
+  imageUrl: string
+}
 
+export default function ProfileSettings({
+  name,
+  email,
+  imageUrl,
+}: ProfileSettingsProps) {
   const [userInfo, setUserInfo] = useState({
-    name: "User Name",
-    email: "user@example.com",
-    avatar: "/placeholder.svg?height=100&width=100",
+    name: name || "User Name",
+    email: email || "user@example.com",
+    avatar: imageUrl || "/placeholder.svg?height=100&width=100",
   })
 
   useEffect(() => {
-    if (user) {
-      setUserInfo({
-        name: user.fullName || "User Name",
-        email: user.primaryEmailAddress?.emailAddress || "user@example.com",
-        avatar: user.imageUrl || "/placeholder.svg?height=100&width=100",
-      })
-    }
-  }, [user])
+    setUserInfo({
+      name: name || "User Name",
+      email: email || "user@example.com",
+      avatar: imageUrl || "/placeholder.svg?height=100&width=100",
+    })
+  }, [name, email, imageUrl])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // BACKEND INTEGRATION: Update user profile in your backend
     console.log("Profile updated:", userInfo)
   }
 
   const handleAvatarUpload = () => {
-    // Optional: Trigger file input or handle Clerk image upload
     console.log("Avatar upload not implemented")
   }
 
@@ -60,12 +64,9 @@ export function ProfileSettings() {
           <div className="flex flex-col items-center space-y-4">
             <div className="relative">
               <Avatar className="h-24 w-24">
-                <AvatarImage
-                  src={userInfo.avatar}
-                  alt={userInfo.name}
-                />
+                <AvatarImage src={userInfo.avatar} alt={userInfo.name} />
                 <AvatarFallback className="bg-green-100 text-green-800 text-xl">
-                  {userInfo.name
+                  {(userInfo.name || "User Name")
                     .split(" ")
                     .map((n) => n[0])
                     .join("")}
