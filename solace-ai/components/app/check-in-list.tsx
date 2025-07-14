@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { CheckCircle, Circle, Clock, Trash, Edit } from "lucide-react"
@@ -9,55 +10,49 @@ import { Label } from "@/components/ui/label"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 // BACKEND INTEGRATION: Fetch actual check-in data from the database
-const checkInsData = [
-  {
-    id: 1,
-    title: "Morning walk",
-    description: "10-15 minute walk to start the day",
-    time: "8:00 AM",
-    completed: true,
-    active: true,
-  },
-  {
-    id: 2,
-    title: "Mindful breathing",
-    description: "5 minutes of focused breathing",
-    time: "12:30 PM",
-    completed: false,
-    active: true,
-  },
-  {
-    id: 3,
-    title: "Screen-free time",
-    description: "No screens 1 hour before bed",
-    time: "9:00 PM",
-    completed: false,
-    active: true,
-  },
-  {
-    id: 4,
-    title: "Gratitude reflection",
-    description: "Write down three things you're grateful for",
-    time: "9:30 PM",
-    completed: false,
-    active: false,
-  },
-]
+
+export interface CheckIn {
+  id?: number
+  user_id: string
+  title: string
+  description: string
+  time: string
+  completed: boolean
+  active: boolean
+}
 
 export function CheckInList() {
-  const [checkIns, setCheckIns] = useState(checkInsData)
-
-  const toggleCompleted = (id: number) => {
+  const [checkIns, setCheckIns] = useState<CheckIn[]>([])
+  useEffect(() => {
+    async function getCheckIns() {
+      const res = await fetch("/checkins", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          // Add Authorization header if you use Clerk/JWT
+        },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setCheckIns(data)
+      }
+    }
+    getCheckIns()
+  }, [])
+  const toggleCompleted = (id: number | undefined) => {
+    if (typeof id !== "number") return;
     setCheckIns(checkIns.map((item) => (item.id === id ? { ...item, completed: !item.completed } : item)))
     // BACKEND INTEGRATION: Update check-in completion status in the database
   }
 
-  const toggleActive = (id: number) => {
+  const toggleActive = (id: number | undefined) => {
+    if (typeof id !== "number") return;
     setCheckIns(checkIns.map((item) => (item.id === id ? { ...item, active: !item.active } : item)))
     // BACKEND INTEGRATION: Update check-in active status in the database
   }
 
-  const deleteCheckIn = (id: number) => {
+  const deleteCheckIn = (id: number | undefined) => {
+    if (typeof id !== "number") return;
     setCheckIns(checkIns.filter((item) => item.id !== id))
     // BACKEND INTEGRATION: Delete check-in from the database
   }

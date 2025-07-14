@@ -1,8 +1,8 @@
-// components/landing-navbar.tsx
 "use client";
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { SignInButton, UserButton, useUser } from "@clerk/nextjs";
@@ -10,6 +10,15 @@ import { SignInButton, UserButton, useUser } from "@clerk/nextjs";
 export function LandingNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isSignedIn } = useUser();
+  const router = useRouter();
+
+  const handleGetStarted = () => {
+    if (isSignedIn) {
+      router.push("/app/dashboard");
+    } else {
+      router.push("/sign-in?redirect_url=/app/dashboard");
+    }
+  };
 
   return (
     <nav className="w-full py-4 px-6 md:px-12 flex items-center justify-between bg-transparent">
@@ -51,11 +60,12 @@ export function LandingNavbar() {
           </SignInButton>
         )}
 
-        <Link href="/app/dashboard">
-          <Button className="bg-green-600 hover:bg-green-700 text-white">
-            Get Started
-          </Button>
-        </Link>
+        <Button
+          onClick={handleGetStarted}
+          className="bg-green-600 hover:bg-green-700 text-white"
+        >
+          Get Started
+        </Button>
       </div>
 
       {/* Mobile Menu Toggle */}
@@ -101,11 +111,15 @@ export function LandingNavbar() {
               </SignInButton>
             )}
 
-            <Link href="/app/dashboard" onClick={() => setIsMenuOpen(false)}>
-              <Button className="bg-green-600 hover:bg-green-700 text-white w-full">
-                Get Started
-              </Button>
-            </Link>
+            <Button
+              onClick={() => {
+                setIsMenuOpen(false);
+                handleGetStarted();
+              }}
+              className="bg-green-600 hover:bg-green-700 text-white w-full"
+            >
+              Get Started
+            </Button>
           </div>
         </div>
       )}

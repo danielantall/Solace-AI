@@ -42,3 +42,13 @@ class HabitCompletionModel(Base):
    habit: Mapped["HabitModel"] = relationship(
         "HabitModel", back_populates="completions"
     )
+
+class CheckInModel(Base):
+    __tablename__ = "checkins"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True)
+    user_id: Mapped[str] = mapped_column(nullable=False, index=True)
+    title: Mapped[str] = mapped_column(nullable=False)
+    description: Mapped[str] = mapped_column(nullable=False)
+    time: Mapped[str] = mapped_column(nullable=False)
+    completed: Mapped[bool] = mapped_column(nullable=False, default=False)
+    active: Mapped[bool] = mapped_column(nullable=False, default=True)

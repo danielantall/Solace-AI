@@ -4,6 +4,7 @@ from datetime import datetime, date
 from enum import Enum
 
 
+
 class Habit(BaseModel):
     id: Optional[str]
     user_id: str
@@ -20,8 +21,6 @@ class Journal(BaseModel):
    content: str
    user_id: str
    created_at: datetime = Field(default_factory=datetime.now)
-
-
    class Config:
        orm_mode = True
 
@@ -30,3 +29,13 @@ class HabitCompletion(BaseModel):
     habit_id: int
     completed: bool
     Date: date = Field(default_factory=date.today)
+
+
+class CheckIn(BaseModel):
+    id: Optional[int]
+    user_id: str
+    title: str
+    description: str
+    time: str
+    completed: bool
+    active: bool
