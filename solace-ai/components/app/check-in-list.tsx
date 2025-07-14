@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-
+import { useAuth } from "@clerk/nextjs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { CheckCircle, Circle, Clock, Trash, Edit } from "lucide-react"
@@ -23,11 +23,14 @@ export interface CheckIn {
 
 export function CheckInList() {
   const [checkIns, setCheckIns] = useState<CheckIn[]>([])
+  const { getToken } = useAuth()
   useEffect(() => {
     async function getCheckIns() {
+      const token = await getToken();
       const res = await fetch("/checkins", {
         method: "GET",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
           // Add Authorization header if you use Clerk/JWT
         },
@@ -39,22 +42,98 @@ export function CheckInList() {
     }
     getCheckIns()
   }, [])
-  const toggleCompleted = (id: number | undefined) => {
+  const toggleCompleted = async (id: number | undefined) => {
     if (typeof id !== "number") return;
+    
+    // Find the check-in to update
+    const checkIn = checkIns.find(item => item.id === id);
+    if (!checkIn) return;
+    
+    // Optimistically update UI
     setCheckIns(checkIns.map((item) => (item.id === id ? { ...item, completed: !item.completed } : item)))
-    // BACKEND INTEGRATION: Update check-in completion status in the database
+    
+    try {
+      const token = await getToken();
+      const response = await fetch(`/api/checkins/${id}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...checkIn,
+          completed: !checkIn.completed
+        })
+      });
+      
+      if (!response.ok) {
+        // Revert optimistic update on failure
+        setCheckIns(checkIns.map((item) => (item.id === id ? { ...item, completed: checkIn.completed } : item)))
+        console.error("Failed to update check-in completion status");
+      }
+    } catch (error) {
+      // Revert optimistic update on error
+      setCheckIns(checkIns.map((item) => (item.id === id ? { ...item, completed: checkIn.completed } : item)))
+      console.error("Error updating check-in:", error);
+    }
   }
 
-  const toggleActive = (id: number | undefined) => {
+  const toggleActive = async (id: number | undefined) => {
     if (typeof id !== "number") return;
+    
+    const checkIn = checkIns.find(item => item.id === id);
+    if (!checkIn) return;
+    
+    // Optimistically update UI
     setCheckIns(checkIns.map((item) => (item.id === id ? { ...item, active: !item.active } : item)))
-    // BACKEND INTEGRATION: Update check-in active status in the database
+    
+    try {
+      const token = await getToken();
+      const response = await fetch(`/api/checkins/${id}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...checkIn,
+          active: !checkIn.active
+        })
+      });
+      
+      if (!response.ok) {
+        // Revert optimistic update on failure
+        setCheckIns(checkIns.map((item) => (item.id === id ? { ...item, active: checkIn.active } : item)))
+        console.error("Failed to update check-in active status");
+      }
+    } catch (error) {
+      // Revert optimistic update on error
+      setCheckIns(checkIns.map((item) => (item.id === id ? { ...item, active: checkIn.active } : item)))
+      console.error("Error updating check-in:", error);
+    }
   }
 
-  const deleteCheckIn = (id: number | undefined) => {
+  const deleteCheckIn = async (id: number | undefined) => {
     if (typeof id !== "number") return;
-    setCheckIns(checkIns.filter((item) => item.id !== id))
-    // BACKEND INTEGRATION: Delete check-in from the database
+    
+    try {
+      const token = await getToken();
+      const response = await fetch(`/api/checkins/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        // Remove from UI only after successful deletion
+        setCheckIns(checkIns.filter((item) => item.id !== id))
+      } else {
+        console.error("Failed to delete check-in");
+      }
+    } catch (error) {
+      console.error("Error deleting check-in:", error);
+    }
   }
 
   return (
